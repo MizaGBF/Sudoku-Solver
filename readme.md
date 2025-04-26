@@ -16,7 +16,9 @@ Non-empty cells must contain **zero-indexed** value (meaning from 0 to 8 for sta
 Check the example included:  
 ```python
 if __name__ == "__main__":
+    import time
     _ = None
+    start = time.time()
     solution : Grid = SudokuSolver(3).solve([
         7, _, _, _, _, _, _, _, _,
         _, _, 2, 5, _, _, _, _, _,
@@ -28,11 +30,13 @@ if __name__ == "__main__":
         _, _, 7, 4, _, _, _, 0, _,
         _, 8, _, _, _, _, 3, _, _,
     ])
+    end = time.time()
     if solution is None:
         print("This grid has no solutions")
     else:
         print("Solution:")
         print(solution.to_string(repr=('1', '2', '3', '4', '5', '6', '7', '8', '9')))
+    print("Ended in {:.2f}ms".format((end - start) * 1000))
 ```  
   
 You can get a string representation of a grid, solved or not, using the `to_string` function.  
