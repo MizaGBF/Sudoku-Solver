@@ -37,5 +37,5 @@ if __name__ == "__main__":
   
 You can get a string representation of a grid, solved or not, using the `to_string` function.  
 There is two optional keyword parameters available:  
-- `repr`: A tuple of the characters to replace the numeric value with. The tuple must have a size of N². For example, for a standard grid, you might want to display the result with a one indexed numbers, so you'll use `('1', '2', '3', '4', '5', '6', '7', '8', '9')`.  
+- `repr`: A tuple of the characters to replace the numeric value with. The tuple must have a size of N². For example, for a standard grid, you might want to display the result with one indexed numbers, so you'll use `('1', '2', '3', '4', '5', '6', '7', '8', '9')`.  
 - `rjust`: The width in number of characters for each cell. The default and minimum is 1.  
