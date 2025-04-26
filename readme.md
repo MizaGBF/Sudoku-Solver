@@ -3,6 +3,12 @@
 Sudoku Solver written in Python.  
 Written and tested on Python 3.13.  
   
+# Note
+  
+This is merely a fun saturday-afternoon project.  
+I tried to optimize it as much as possible for speed.  
+Do note it assumes the grid passed to `solve` is valid (i.e. not containing negative values or values greater or equal to N²), make sure to check beforehand.  
+  
 # Usage  
   
 Instantiate a `SudokuSolver` class with the given complexity N.  
@@ -18,8 +24,9 @@ Check the example included:
 if __name__ == "__main__":
     import time
     _ = None
+    solver = SudokuSolver(3)
     start = time.time()
-    solution : Grid = SudokuSolver(3).solve([
+    solution : list[int] = solver.solve([
         7, _, _, _, _, _, _, _, _,
         _, _, 2, 5, _, _, _, _, _,
         _, 6, _, _, 8, _, 1, _, _,
@@ -35,7 +42,7 @@ if __name__ == "__main__":
         print("This grid has no solutions")
     else:
         print("Solution:")
-        print(solution.to_string(repr=('1', '2', '3', '4', '5', '6', '7', '8', '9')))
+        print(solver.to_string(solution, repr=('1', '2', '3', '4', '5', '6', '7', '8', '9')))
     print("Ended in {:.2f}ms".format((end - start) * 1000))
 ```  
   
