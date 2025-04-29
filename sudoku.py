@@ -102,8 +102,9 @@ class SudokuSolver:
                         peer = peer & ~(1 << v) # lower down bit
                         grid[q] = peer # update grid
                         if (peer & (peer - 1)) == 0: # is solved
-                            self.occurences[(prvl)] += 1
-                            _deqapp_(queue, (q, peer))
+                            prvl = _blen_(peer) - 1
+                            self.occurences[prvl] += 1
+                            _deqapp_(queue, (q, prvl))
                 except Conflict:
                     raise Conflict(f"Conflict occured while eliminating value {v} for peer ({q % self.side_len},{q // self.side_len}) from cell ({p % self.side_len},{p // self.side_len})")
                 except Exception as e:
