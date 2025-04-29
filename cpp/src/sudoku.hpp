@@ -14,7 +14,16 @@
 #include <iostream>
 
 using myuint = std::size_t; // change this to increase size
-using Solved = std::pair<myuint, myuint>;
+
+struct Solved
+{
+	myuint position;
+	myuint bit;
+	Solved(const myuint& position, const myuint& bit)
+		: position(position)
+		, bit(bit)
+    {};
+};
 
 template <myuint N>
 using Grid = std::array<myuint, N>;
@@ -33,7 +42,7 @@ class SudokuSolver
 	private:
 		std::array<myuint, c_side_len> m_occurences;
 		
-		const myuint get_smallest_unsolved(const Grid<c_total_cells>& grid) const
+		myuint get_smallest_unsolved(const Grid<c_total_cells>& grid) const
 		{
 			myuint best = c_side_len + 1;
 			myuint pos = grid.size();
@@ -79,8 +88,6 @@ class SudokuSolver
 		static Peers<c_total_cells * c_peer_count> compute_peers()
 		{
 			Peers<c_total_cells * c_peer_count> peers;
-			const myuint block_x_side = c_block_size * c_side_len;
-			const myuint tri_side_len = 3 * c_side_len;
 			for(myuint i = 0; i < c_total_cells; ++i)
 			{
 				const myuint ix = i % c_side_len;
@@ -134,11 +141,11 @@ class SudokuSolver
 				queue.pop();
 				for(myuint i = 0; i < c_peer_count; ++i)
 				{
-					const auto& p = c_peers[src.first * c_peer_count + i];
+					const auto& p = c_peers[src.position * c_peer_count + i];
 					auto& peer = grid[p];
 					if((peer & (peer - 1)) == 0) // is solved?
 					{
-						if(src.second == highest_bit(peer)) // check if same
+						if(src.bit == highest_bit(peer)) // check if same
 						{
 							std::queue<Solved> empty;
 							queue.swap(empty); // clear queue
@@ -147,7 +154,7 @@ class SudokuSolver
 					}
 					else
 					{
-						peer = peer & ~(1 << src.second); // lower down bit
+						peer = peer & ~(1 << src.bit); // lower down bit
 						if((peer & (peer - 1)) == 0) // is solved?
 						{
 							auto solved = highest_bit(peer);

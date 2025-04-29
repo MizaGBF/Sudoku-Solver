@@ -70,9 +70,10 @@ If the grid is unsolvable, it will return an empty grid.
 For building, uses cmake.  
 For example, on Windows with MinGW:  
 ```
-cmake -B build -G "MinGW Makefiles"
+cmake 
+-S . -B build -DBUILD_STATIC_RUNTIME=ON -DCMAKE_BUILD_TYPE=Release -G "MinGW Makefiles" 
 cd build
 make
 cd ..
-```  
+```   
 Make sure your compiler and its libraries are in your PATH.  
