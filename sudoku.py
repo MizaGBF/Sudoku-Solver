@@ -6,6 +6,8 @@ _bcount_ = int.bit_count
 _blen_ = int.bit_length
 _deqclr_ = deque.clear
 _deqapp_ = deque.append
+_deqpop_ = deque.pop
+_deqpopl_ = deque.popleft
 _lstsrt_ = list.sort
 _lstcpy_ = list.copy
 _setadd_ = set.add
@@ -26,13 +28,12 @@ class SudokuSolver:
         self.block_x_side : int = self.block_size * self.side_len
         # for caching
         self.peers : list[set[int]|None] = [self.compute_peers(i) for i in range(self.total_cells)] # cache peer cell positions
-        self.occurences : list[int] = [] # store occurences of each numbers (is reset with each solve call)
 
     def solve(self, input_grid : list[int|None]) -> list[int]|None:
         # Check if the input grid has the right size
         if len(input_grid) != self.total_cells:
             raise Exception("Invalid grid size")
-        self.occurences = [0 for i in range(self.side_len)]
+        occurences = [0 for i in range(self.side_len)]
         # Initialize and populate grid
         g = [(((1 << (self.side_len)) - 1) if v is None else (1 << v)) for p, v in enumerate(input_grid)] # first grid
         # Note: each cell contains an integer with N number of bits raised (9 for a standard grid). A bit raised means the value can be assigned
@@ -40,18 +41,18 @@ class SudokuSolver:
         for p, v in enumerate(g):
             if (v & (v - 1)) == 0:
                 b : int = _blen_(v) - 1
-                self.occurences[b] += 1
+                occurences[b] += 1
                 _deqapp_(queue, (p, b)) # add to queue for propagation
         # Now propagate initial assigments
         try:
-            self.propagate(g, queue)
+            self.propagate(g, occurences, queue)
         except Conflict as c:
             print("Initial grid isn't valid:", c)
             return None
         # Now try to fill the rest of the grid
-        stack : deque[list[int]] = deque([g]) # the stack starts with our first grid
+        stack : deque[list[int]] = deque([(g, occurences)]) # the stack starts with our first grid
         while len(stack) > 0:
-            g = stack.pop() # get top of stack
+            g, occurences = _deqpop_(stack) # get top of stack
             unassigned : int|None = self.get_first_lowest_unassigned(g) # retrieve unsolved cell with less amount of possible values
             if unassigned is None: # no unassigned means the grid is solved
                 return g
@@ -59,17 +60,17 @@ class SudokuSolver:
             # List the possible values
             canditates : list[int] = [] if (cell & (cell - 1)) == 0 else [v for v in range(self.side_len) if cell & (1 << v) != 0]
             # Sort by reverse occurences (i.e. Most populated ones first)
-            _lstsrt_(canditates, key=lambda x: self.occurences[x], reverse=True)
+            _lstsrt_(canditates, key=lambda x: occurences[x], reverse=True)
             for v in canditates: # For each possible value
                 try:
                     cpy = _lstcpy_(g) # create a copy of our grid
+                    ocu_cpy = _lstcpy_(occurences) # and of occurences
                     cpy[unassigned] = (1 << v) # set only this bit raised
                     # propagate to other cells
-                    _deqclr_(queue) # reuse existing queue
                     _deqapp_(queue, (unassigned, v))
-                    self.propagate(cpy, queue)
+                    self.propagate(cpy, ocu_cpy, queue)
                     # No exception, we had our new grid to the stack
-                    _deqapp_(stack, cpy)
+                    _deqapp_(stack, (cpy, ocu_cpy))
                 except Conflict:
                     pass
         return None
@@ -87,10 +88,10 @@ class SudokuSolver:
                 best, index = n, p
         return index
 
-    def propagate(self, grid : list[int], queue : deque):
+    def propagate(self, grid : list[int], occurences : list[int], queue : deque[tuple[int, int]]):
         # propagate
         while queue:
-            p, v = queue.popleft() # pop next element
+            p, v = _deqpopl_(queue) # pop next element
             for q in self.peers[p]:
                 peer : int = grid[q]
                 prvl : int = _blen_(peer) - 1
@@ -103,9 +104,10 @@ class SudokuSolver:
                         grid[q] = peer # update grid
                         if (peer & (peer - 1)) == 0: # is solved
                             prvl = _blen_(peer) - 1
-                            self.occurences[prvl] += 1
+                            occurences[prvl] += 1
                             _deqapp_(queue, (q, prvl))
                 except Conflict:
+                    _deqclr_(queue)
                     raise Conflict(f"Conflict occured while eliminating value {v} for peer ({q % self.side_len},{q // self.side_len}) from cell ({p % self.side_len},{p // self.side_len})")
                 except Exception as e:
                     raise e
